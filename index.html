@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<!--
+  VIEWPORT: viewport-fit=cover extends the canvas under the notch/Dynamic Island.
+  Combined with the apple-mobile-web-app meta tags, this enables full PWA mode.
+-->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Self-Care OS"/>
+<meta name="color-scheme" content="light dark"/>
+<title>Self-Care OS</title>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   Brand palette + semantic colour tokens with full dark-mode support
+════════════════════════════════════════════════════════════════ */
+:root {
+  /* Brand — never change between light/dark */
+  --navy:        #0B1F3A;
+  --navy-mid:    #163560;
+  --navy-light:  #1d4a8a;
+  --gold:        #C7A46A;
+  --gold-light:  #e8c488;
+
+  /* Semantic — light mode defaults */
+  --bg:          #EEF1F8;
+  --surface:     #F5F7FC;
+  --card:        #FFFFFF;
+  --card-2:      #FFFFFF;
+  --text-1:      #0B1F3A;
+  --text-2:      #334155;
+  --text-3:      #64748B;
+  --text-4:      #94a3b8;
+  --line:        #E2E8F0;
+  --line-2:      #CBD5E1;
+  --blue-tint:   #EEF3FF;
+  --danger:      #DC2626;
+  --danger-bg:   #FEE2E2;
+  --warn:        #F59E0B;
+  --warn-bg:     #FEF3C7;
+  --green:       #16A34A;
+  --green-bg:    #DCFCE7;
+
+  /* Radii */
+  --r4: 4px; --r8: 8px; --r12: 12px; --r16: 16px;
+  --r20: 20px; --r24: 24px; --r32: 32px;
+
+  /* Shadows */
+  --sh1: 0 1px 4px rgba(11,31,58,.06);
+  --sh2: 0 2px 12px rgba(11,31,58,.09);
+  --sh3: 0 4px 24px rgba(11,31,58,.12);
+
+  /* Typography — SF Pro system stack with better cross-platform fallbacks */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-d: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* iOS safe areas — default 0, overridden by env() where supported */
+  --sat: env(safe-area-inset-top,    0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+  --sar: env(safe-area-inset-right,  0px);
+
+  /* Touch minimum per HIG */
+  --touch: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0F1923;
+    --surface:   #1C2733;
+    --card:      #1E2D3D;
+    --card-2:    #253346;
+    --text-1:    #F0F4F8;
+    --text-2:    #CBD5E1;
+    --text-3:    #94A3B8;
+    --text-4:    #64748B;
+    --line:      #2A3A4A;
+    --line-2:    #374859;
+    --blue-tint: #162032;
+    --danger-bg: rgba(220,38,38,.18);
+    --warn-bg:   rgba(245,158,11,.15);
+    --green-bg:  rgba(22,163,74,.15);
+    --sh1: 0 1px 4px rgba(0,0,0,.25);
+    --sh2: 0 2px 12px rgba(0,0,0,.35);
+    --sh3: 0 4px 24px rgba(0,0,0,.45);
+  }
+}
+[data-theme="dark"] {
+  --bg:#0F1923; --surface:#1C2733; --card:#1E2D3D; --card-2:#253346;
+  --text-1:#F0F4F8; --text-2:#CBD5E1; --text-3:#94A3B8; --text-4:#64748B;
+  --line:#2A3A4A; --line-2:#374859; --blue-tint:#162032;
+  --danger-bg:rgba(220,38,38,.18); --warn-bg:rgba(245,158,11,.15); --green-bg:rgba(22,163,74,.15);
+  --sh1:0 1px 4px rgba(0,0,0,.25); --sh2:0 2px 12px rgba(0,0,0,.35); --sh3:0 4px 24px rgba(0,0,0,.45);
+}
+[data-theme="light"] {
+  --bg:#EEF1F8; --surface:#F5F7FC; --card:#FFFFFF; --card-2:#FFFFFF;
+  --text-1:#0B1F3A; --text-2:#334155; --text-3:#64748B; --text-4:#94a3b8;
+  --line:#E2E8F0; --line-2:#CBD5E1; --blue-tint:#EEF3FF;
+  --danger-bg:#FEE2E2; --warn-bg:#FEF3C7; --green-bg:#DCFCE7;
+  --sh1:0 1px 4px rgba(11,31,58,.06); --sh2:0 2px 12px rgba(11,31,58,.09); --sh3:0 4px 24px rgba(11,31,58,.12);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RESET
+════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  height: 100%;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+svg { display: block; flex-shrink: 0; }
+img { display: block; max-width: 100%; }
+input { font: inherit; }
+
+/* ════════════════════════════════════════════════════════════════
+   APP SHELL — THE LAYOUT FOUNDATION
+   
+   Strategy: one fixed-position container fills the exact visible
+   viewport. Uses padding to push content below status bar (top)
+   and above home indicator (bottom). The JS measures exact insets
+   on first paint and applies them.
+   
+   This approach works correctly in BOTH browser and PWA mode.
+════════════════════════════════════════════════════════════════ */
+#app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* modern browsers — accounts for mobile browser chrome */
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /*
+    Safe area padding — only relevant on iOS devices with notch/Dynamic Island.
+    env() returns 0px on non-iOS, so layout is unaffected on desktop.
+  */
+  padding-top:    var(--sat);
+  padding-bottom: var(--sab);
+  padding-left:   var(--sal);
+  padding-right:  var(--sar);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TOP BAR
+   flex-shrink:0 so it never collapses.
+   No padding-top here — #app's padding-top handles the status bar.
+════════════════════════════════════════════════════════════════ */
+#topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  min-height: var(--touch);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  z-index: 10;
+}
+.tb-left  { display: flex; align-items: center; gap: 10px; }
+.tb-right { display: flex; align-items: center; gap: 8px; }
+.tb-brand { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-4); font-weight: 600; }
+.tb-title { font-family: var(--font-d); font-size: 18px; font-weight: 700; color: var(--text-1); line-height: 1.1; }
+
+.btn-back {
+  width: var(--touch); height: var(--touch);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  box-shadow: var(--sh1);
+  flex-shrink: 0;
+}
+.brand-mark {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(11,31,58,.25);
+  flex-shrink: 0;
+}
+.pill-btn {
+  height: var(--touch);
+  display: flex; align-items: center; gap: 5px;
+  padding: 0 12px;
+  background: var(--blue-tint);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: var(--green);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ════════════════════════════════════════════════════════════════
+   PLATFORM SWITCHER
+════════════════════════════════════════════════════════════════ */
+#plat-bar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 7px;
+  padding: 10px 14px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bg);
+}
+#plat-bar::-webkit-scrollbar { display: none; }
+.plat-btn {
+  flex-shrink: 0;
+  height: var(--touch);
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 13px; font-weight: 700;
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.plat-btn.active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  box-shadow: 0 2px 8px rgba(11,31,58,.22);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SCROLL AREA — fills all remaining space between topbar and tabbar
+════════════════════════════════════════════════════════════════ */
+#scroller {
+  flex: 1;
+  min-height: 0;       /* critical for flex children to shrink */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+#scroller::-webkit-scrollbar { display: none; }
+
+/* Padding inside scroller so content has breathing room */
+.screen-pad { padding: 12px 14px 20px; }
+
+/* ════════════════════════════════════════════════════════════════
+   TAB BAR
+   flex-shrink:0 so it never collapses.
+   No padding-bottom here — #app's padding-bottom handles home indicator.
+════════════════════════════════════════════════════════════════ */
+#tabbar {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 6px 4px 8px;
+}
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 4px;
+  min-height: var(--touch);
+  border-radius: var(--r12);
+  color: var(--text-4);
+  font-size: 10px; font-weight: 500;
+  transition: color .2s, background .2s;
+}
+.tab-btn.active { background: var(--blue-tint); color: var(--navy); }
+.tab-btn svg { width: 20px; height: 20px; }
+
+/* ════════════════════════════════════════════════════════════════
+   LAYOUT HELPERS
+════════════════════════════════════════════════════════════════ */
+.stack    { display: flex; flex-direction: column; gap: 12px; }
+.stack-s  { display: flex; flex-direction: column; gap: 8px; }
+.row      { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.row-s    { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.grid2    { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hidden   { display: none !important; }
+
+/* ════════════════════════════════════════════════════════════════
+   CARDS
+════════════════════════════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r24);
+  padding: 16px;
+  box-shadow: var(--sh2);
+}
+.card-s  { padding: 13px; }
+.card-xs { padding: 10px 13px; }
+
+/* Hero card — navy gradient */
+.card-hero {
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy-mid) 55%, var(--navy-light) 100%);
+  border: none;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.card-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 90% 10%, rgba(199,164,106,.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 5% 90%,  rgba(255,255,255,.05) 0%, transparent 40%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+
+/* Alert card */
+.card-warn   { background: linear-gradient(135deg,#FFFBEB,#FEF9EC); border-color: #FDE68A; }
+.card-danger { background: #FFF5F5; border-color: #FECACA; }
+.card-green  { background: var(--green-bg); border-color: rgba(22,163,74,.3); }
+.card-surface{ background: var(--surface); }
+
+/* Metric mini card */
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r20);
+  padding: 14px;
+  box-shadow: var(--sh1);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TYPOGRAPHY HELPERS
+════════════════════════════════════════════════════════════════ */
+.t-hero   { font-family: var(--font-d); font-size: 26px; font-weight: 300; letter-spacing: -.02em; color: var(--text-1); line-height: 1.15; }
+.t-h2     { font-family: var(--font-d); font-size: 20px; font-weight: 300; letter-spacing: -.01em; color: var(--text-1); }
+.t-h3     { font-size: 17px; font-weight: 700; color: var(--text-1); }
+.t-h4     { font-size: 15px; font-weight: 700; color: var(--text-1); }
+.t-label  { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-4); }
+.t-body   { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+.t-small  { font-size: 13px; color: var(--text-3); }
+.t-tiny   { font-size: 11.5px; color: var(--text-4); }
+.t-num    { font-family: var(--font-d); font-size: 26px; font-weight: 300; letter-spacing: -.02em; color: var(--text-1); }
+.t-num-lg { font-family: var(--font-d); font-size: 34px; font-weight: 300; letter-spacing: -.02em; }
+
+/* ════════════════════════════════════════════════════════════════
+   BADGES
+════════════════════════════════════════════════════════════════ */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.badge-high   { background: var(--danger-bg); color: var(--danger); }
+.badge-medium { background: var(--warn-bg);   color: #92400E; }
+.badge-low    { background: var(--green-bg);  color: var(--green); }
+.badge-navy   { background: rgba(11,31,58,.07); color: var(--navy); }
+.badge-blue   { background: var(--blue-tint); color: var(--navy-mid); }
+.badge-gold   { background: rgba(199,164,106,.12); border: 1px solid rgba(199,164,106,.25); color: var(--gold); }
+
+/* ════════════════════════════════════════════════════════════════
+   LIST ITEMS
+════════════════════════════════════════════════════════════════ */
+.list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  min-height: var(--touch);
+  background: var(--surface);
+  border-radius: var(--r16);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.list-item:active { background: var(--line); }
+.item-icon {
+  width: 40px; height: 40px;
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.ic-blue  { background: var(--blue-tint); }
+.ic-gold  { background: rgba(199,164,106,.12); }
+.ic-green { background: var(--green-bg); }
+.ic-warn  { background: var(--warn-bg); }
+.ic-navy  { background: rgba(11,31,58,.06); }
+.chevron  { font-size: 20px; color: var(--text-4); flex-shrink: 0; }
+
+/* ════════════════════════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════════════════════════ */
+.btn-primary {
+  width: 100%; padding: 15px;
+  min-height: var(--touch);
+  border-radius: var(--r16);
+  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+  color: #fff; font-weight: 700; font-size: 15px;
+  box-shadow: 0 3px 12px rgba(11,31,58,.22);
+  transition: opacity .12s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active { opacity: .9; transform: scale(.99); }
+
+.btn-secondary {
+  width: 100%; padding: 14px;
+  min-height: var(--touch);
+  border-radius: var(--r16);
+  background: var(--card);
+  color: var(--text-2); font-weight: 600; font-size: 14px;
+  border: 1.5px solid var(--line);
+  transition: background .12s;
+}
+.btn-secondary:active { background: var(--surface); }
+
+.btn-ghost { padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--gold); }
+.btn-2col  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ════════════════════════════════════════════════════════════════
+   PROGRESS BAR
+════════════════════════════════════════════════════════════════ */
+.progress { height: 7px; background: var(--surface); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.progress-fill { height: 100%; border-radius: 999px; transition: width .6s ease; }
+
+/* ════════════════════════════════════════════════════════════════
+   KV GRID
+════════════════════════════════════════════════════════════════ */
+.kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.kv-card { background: var(--surface); border-radius: var(--r16); padding: 12px; border: 1px solid var(--line); }
+.kv-label { font-size: 11px; color: var(--text-3); font-weight: 500; margin-bottom: 5px; }
+.kv-value { font-size: 15px; font-weight: 700; color: var(--text-1); }
+
+/* ════════════════════════════════════════════════════════════════
+   TIMELINE
+════════════════════════════════════════════════════════════════ */
+.tl { display: flex; flex-direction: column; }
+.tl-item { display: flex; gap: 13px; padding-bottom: 16px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-spine { display: flex; flex-direction: column; align-items: center; width: 22px; flex-shrink: 0; }
+.tl-dot { width: 11px; height: 11px; border-radius: 999px; border: 2px solid var(--navy); background: var(--card); flex-shrink: 0; margin-top: 3px; }
+.tl-dot.filled { background: var(--navy); }
+.tl-dot.gold   { border-color: var(--gold); background: var(--gold); }
+.tl-line { width: 2px; flex: 1; background: var(--line); margin: 4px 0 0; }
+.tl-item:last-child .tl-line { display: none; }
+.tl-body { flex: 1; padding-top: 1px; }
+
+/* ════════════════════════════════════════════════════════════════
+   BAR CHART
+════════════════════════════════════════════════════════════════ */
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; }
+.bar-col   { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bar-fill  { width: 100%; border-radius: 6px 6px 0 0; }
+.bar-navy  { background: linear-gradient(180deg, #3a6cc8, #1a3a6b); }
+.bar-gold  { background: linear-gradient(180deg, var(--gold-light), var(--gold)); }
+.bar-lbl   { font-size: 9px; color: var(--text-4); font-weight: 600; }
+
+/* ════════════════════════════════════════════════════════════════
+   SPARKLINE HELPER
+════════════════════════════════════════════════════════════════ */
+.sparkline { overflow: visible; }
+
+/* ════════════════════════════════════════════════════════════════
+   AVATAR
+════════════════════════════════════════════════════════════════ */
+.avatar {
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700;
+  font-family: var(--font-d);
+  flex-shrink: 0;
+}
+.av-sm { width: 34px; height: 34px; font-size: 13px; }
+.av-md { width: 44px; height: 44px; font-size: 17px; }
+.av-lg { width: 64px; height: 64px; font-size: 26px; }
+
+/* ════════════════════════════════════════════════════════════════
+   STATUS DOT
+════════════════════════════════════════════════════════════════ */
+.dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-warn  { background: var(--warn); }
+.dot-red   { background: var(--danger); }
+.dot-grey  { background: var(--text-4); }
+
+/* ════════════════════════════════════════════════════════════════
+   TOGGLE SWITCH
+════════════════════════════════════════════════════════════════ */
+.toggle { width: 44px; height: 26px; border-radius: 999px; background: var(--green); position: relative; flex-shrink: 0; cursor: pointer; transition: background .2s; }
+.toggle.off { background: var(--line-2); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: left .2s; }
+.toggle:not(.off)::after { left: 21px; }
+
+/* ════════════════════════════════════════════════════════════════
+   SECTION HEADING
+════════════════════════════════════════════════════════════════ */
+.section-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; margin-bottom: -4px; }
+
+/* ════════════════════════════════════════════════════════════════
+   CALENDAR
+════════════════════════════════════════════════════════════════ */
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; text-align: center; }
+.cal-hdr  { font-size: 11px; font-weight: 700; color: var(--text-4); text-transform: uppercase; height: 24px; display: flex; align-items: center; justify-content: center; letter-spacing: .04em; }
+.cal-day  { height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--text-2); position: relative; cursor: pointer; }
+.cal-day.today { background: var(--navy); color: #fff; font-weight: 700; }
+.cal-day.has-event::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 999px; background: var(--gold); }
+.cal-day.today.has-event::after { background: var(--gold-light); }
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL / BOTTOM SHEET
+════════════════════════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: fadeIn .18s ease;
+}
+.modal-overlay.hidden { display: none; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-sheet {
+  background: var(--card);
+  border-radius: var(--r32) var(--r32) 0 0;
+  width: min(430px, 100vw);
+  padding: 24px 20px calc(24px + var(--sab));
+  animation: sheetUp .25s cubic-bezier(.34,1.56,.64,1);
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.sheet-handle { width: 36px; height: 4px; background: var(--line-2); border-radius: 999px; margin: 0 auto 20px; }
+
+/* ════════════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════════════ */
+.toast {
+  position: fixed; z-index: 300;
+  /* Position below topbar — JS will calculate exact top */
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  width: calc(min(430px,100vw) - 28px);
+  background: var(--navy); color: #fff;
+  border-radius: var(--r16);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--sh3);
+  animation: toastIn .25s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+}
+.toast.hidden { display: none; }
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+/* ════════════════════════════════════════════════════════════════
+   ICON PICKER
+════════════════════════════════════════════════════════════════ */
+.icon-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.icon-opt  { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+.icon-opt span { font-size: 11px; color: var(--text-3); font-weight: 600; }
+.icon-opt svg  { border-radius: 20px; box-shadow: var(--sh2); transition: transform .15s; }
+.icon-opt:active svg { transform: scale(.94); }
+.icon-opt.selected svg { outline: 3px solid var(--navy); outline-offset: 3px; }
+
+/* ════════════════════════════════════════════════════════════════
+   DIVIDER
+════════════════════════════════════════════════════════════════ */
+.divider { height: 1px; background: var(--line); margin: 12px 0; }
+
+/* ════════════════════════════════════════════════════════════════
+   ACCESSIBILITY
+════════════════════════════════════════════════════════════════ */
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+:focus:not(:focus-visible) { outline: none; }
+.skip-link { position: absolute; top: -100px; left: 16px; background: var(--navy); color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; z-index: 9999; transition: top .2s; }
+.skip-link:focus { top: 8px; }
+
+/* ════════════════════════════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════════════════════════════ */
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.anim > * { animation: fadeUp .28s ease both; }
+.anim > *:nth-child(1){animation-delay:.03s}
+.anim > *:nth-child(2){animation-delay:.07s}
+.anim > *:nth-child(3){animation-delay:.11s}
+.anim > *:nth-child(4){animation-delay:.15s}
+.anim > *:nth-child(5){animation-delay:.19s}
+.anim > *:nth-child(6){animation-delay:.23s}
+.anim > *:nth-child(7){animation-delay:.27s}
+
+/* Step list */
+.step-list { display: flex; flex-direction: column; gap: 10px; }
+.step-item { display: flex; gap: 12px; align-items: flex-start; }
+.step-num  { width: 28px; height: 28px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--navy); color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 6px rgba(11,31,58,.18); }
+.step-num.gold { background: linear-gradient(135deg,var(--gold-light),var(--gold)); color: var(--navy); }
+
+/* Search */
+.search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r16); padding: 10px 14px; }
+.search-bar input { border: none; background: none; font: inherit; font-size: 14px; color: var(--text-1); flex: 1; outline: none; }
+.search-bar input::placeholder { color: var(--text-4); }
+
+/* Ring */
+.ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.ring-center { position: absolute; text-align: center; }
+
+/* Activity week dots */
+.week-dots { display: flex; gap: 5px; }
+.week-dot  { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.week-dot-circle { width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+</style>
+</head>
+<body>
+<a href="#scroller" class="skip-link">Skip to content</a>
+
+<div id="app">
+  <!-- TOP BAR -->
+  <header id="topbar" role="banner">
+    <div class="tb-left">
+      <button class="btn-back hidden" id="btnBack" aria-label="Go back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="brand-mark" id="brandMark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div>
+        <div class="tb-brand">Self-Care OS</div>
+        <div class="tb-title" id="screenTitle">Home</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="live-dot" role="status" aria-label="Monitoring active"></div>
+      <button class="pill-btn" id="btnTheme" aria-label="Toggle appearance">
+        <svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="pill-btn" id="btnIconPicker" aria-label="Choose app icon" aria-haspopup="dialog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        App Icon
+      </button>
+    </div>
+  </header>
+
+  <!-- PLATFORM SWITCHER -->
+  <div id="plat-bar" role="tablist" aria-label="Platform">
+    <button class="plat-btn active" data-plat="patient" role="tab" aria-selected="true">Patient App</button>
+    <button class="plat-btn" data-plat="clinician" role="tab" aria-selected="false">Clinician</button>
+    <button class="plat-btn" data-plat="employer" role="tab" aria-selected="false">Employer</button>
+  </div>
+
+  <!-- SCROLLABLE CONTENT -->
+  <main id="scroller" role="main" aria-live="polite"></main>
+
+  <!-- TAB BAR -->
+  <nav id="tabbar" role="tablist" aria-label="Main navigation">
+    <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true" aria-label="Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="tab-btn" data-tab="care" role="tab" aria-selected="false" aria-label="Care">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Care
+    </button>
+    <button class="tab-btn" data-tab="monitor" role="tab" aria-selected="false" aria-label="Monitor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Monitor
+    </button>
+    <button class="tab-btn" data-tab="records" role="tab" aria-selected="false" aria-label="Records">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Records
+    </button>
+    <button class="tab-btn" data-tab="more" role="tab" aria-selected="false" aria-label="More">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      More
+    </button>
+  </nav>
+</div>
+
+<!-- ICON PICKER MODAL -->
+<div class="modal-overlay hidden" id="iconModal" role="dialog" aria-modal="true" aria-label="Choose App Icon">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="t-h3" style="margin-bottom:6px">Choose App Icon</div>
+    <div class="t-small" style="margin-bottom:20px">Select your preferred icon for Self-Care OS.</div>
+    <div class="icon-grid" id="iconGrid"></div>
+    <button class="btn-primary" style="margin-top:20px" id="iconDone" aria-label="Confirm selection">Done</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="live-dot dot-green"></div>
+  <div style="flex:1">
+    <div style="font-weight:700;font-size:13px" id="toastTitle"></div>
+    <div style="font-size:12px;opacity:.75" id="toastBody"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════════════
+   SAFE AREA — THE DEFINITIVE FIX
+   
+   How it works:
+   1. On every paint, we measure the ACTUAL rendered height of
+      #topbar and #tabbar using getBoundingClientRect().
+   2. We set #app's padding using env(safe-area-inset-*) which
+      works correctly in BOTH browser and PWA mode when
+      viewport-fit=cover is set.
+   3. As a belt-and-suspenders fallback, if env() returns 0
+      we use hardcoded values based on screen dimensions.
+   4. The scroll bounce is prevented by blocking touchmove
+      at the document level except inside #scroller.
+════════════════════════════════════════════════════════════════ */
+
+// Disable Safari scroll restoration
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+function initLayout() {
+  var app = document.getElementById('app');
+  if (!app) return;
+
+  // Measure actual safe area values
+  var probe = document.createElement('div');
+  probe.style.cssText = [
+    'position:fixed', 'top:0', 'left:0', 'width:0', 'height:0',
+    'padding-top:env(safe-area-inset-top,0px)',
+    'padding-bottom:env(safe-area-inset-bottom,0px)',
+    'visibility:hidden', 'pointer-events:none'
+  ].join(';');
+  document.body.appendChild(probe);
+  var cs = getComputedStyle(probe);
+  var safeTop    = parseInt(cs.paddingTop,    10) || 0;
+  var safeBottom = parseInt(cs.paddingBottom, 10) || 0;
+  document.body.removeChild(probe);
+
+  // Fallback: if env() returns 0 AND we're on an actual iOS device,
+  // use screen-size-based values matching Apple's published specs.
+  // On desktop/non-iOS, safe area stays 0 so the layout isn't distorted.
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS && safeTop === 0) {
+    var sw = window.screen.width;
+    var sh = window.screen.height;
+    if (sh >= 932) safeTop = 59;
+    else if (sh >= 852) safeTop = 59;
+    else if (sh >= 844) safeTop = 47;
+    else safeTop = 44;
+  }
+  if (isIOS && safeBottom === 0) safeBottom = 34;
+
+  // Apply safe area padding only on iOS — on desktop/Chrome, env() in CSS handles it
+  if (isIOS) {
+    app.style.paddingTop    = safeTop    + 'px';
+    app.style.paddingBottom = safeBottom + 'px';
+  }
+
+  // Update toast position to sit just below topbar
+  var topbar = document.getElementById('topbar');
+  if (topbar) {
+    setTimeout(function() {
+      var tbh = topbar.getBoundingClientRect().height;
+      var toast = document.getElementById('toast');
+      if (toast) toast.style.top = (tbh + 8) + 'px';
+    }, 100);
+  }
+}
+
+// Prevent document-level bounce scroll (iOS Safari only)
+// Only apply on iOS where overscroll-behavior isn't fully supported
+var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+if (_isIOS) {
+  var _touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    var el = e.target;
+    while (el && el !== document.documentElement) {
+      if (el.id === 'scroller') {
+        var atTop    = el.scrollTop <= 0;
+        var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+        var goingDown = e.touches[0].clientY > _touchStartY;
+        var goingUp   = e.touches[0].clientY < _touchStartY;
+        if (atTop && goingDown) { e.preventDefault(); return; }
+        if (atBottom && goingUp) { e.preventDefault(); return; }
+        return;
+      }
+      if (el.classList && el.classList.contains('modal-sheet')) return;
+      if (el.id === 'plat-bar') return;
+      el = el.parentElement;
+    }
+    e.preventDefault();
+  }, { passive: false });
+}
+
+// ════════════════════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════════════════════
+var S = {
+  tab: 'home',
+  platform: 'patient',
+  stack: [],
+  simStep: 0,
+  selectedIcon: '1'
+};
+
+// ════════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════════
+var METRICS = [
+  {id:'bp',    label:'Blood Pressure', value:'118/76', unit:'mmHg', sub:'Stable · within target',    trend:'flat', history:[128,122,120,119,118,120,118], color:'#1D4ED8'},
+  {id:'hr',    label:'Resting HR',     value:'74',     unit:'bpm',  sub:'+4 overnight · above baseline', trend:'up', history:[67,69,68,70,72,73,74], color:'#DC2626'},
+  {id:'sleep', label:'Sleep',          value:'6h 42m', unit:'',     sub:'Below 7h target',           trend:'down', history:[7.2,6.8,7.1,6.5,6.9,7.0,6.7], color:'#7C3AED'},
+  {id:'steps', label:'Steps',          value:'7,214',  unit:'',     sub:'On pace for daily goal',    trend:'flat', history:[6800,7200,8100,6500,9200,7800,7214], color:'#0F766E'},
+];
+var ALERTS = [
+  {id:'a1', title:'Elevated resting heart rate', time:'8:12 AM', priority:'high',   metric:'74 bpm',        baseline:'66–69 bpm', detail:'Heart rate elevated since waking. Pattern matches prior escalation events. Confirm hydration and medication adherence.'},
+  {id:'a2', title:'Medication dose unconfirmed', time:'7:30 AM', priority:'medium', metric:'Lisinopril 10mg',baseline:'Daily 8:00 AM', detail:'Morning dose window passed without confirmation. Two consecutive missed confirmations this week.'},
+  {id:'a3', title:'Sleep deficit detected',      time:'6:45 AM', priority:'low',    metric:'6h 42m',        baseline:'7h+ target', detail:'Sleep duration fell below target for the third consecutive night. Review evening routine.'},
+];
+var RECORDS = [
+  {id:'r1', title:'Lab Results',       sub:'Comprehensive metabolic panel',  date:'Mar 10', icon:'🧪', type:'Lab',      summary:'All values within normal range. Kidney function stable (eGFR 94). Liver enzymes normal. Lipid panel shows mild LDL elevation at 132 mg/dL.'},
+  {id:'r2', title:'Primary Care Visit',sub:'Annual wellness visit summary',  date:'Mar 8',  icon:'🏥', type:'Visit',    summary:'BP well-controlled on current medication. Recommended continued Lisinopril 10mg, increased physical activity, and follow-up lipid panel in 6 months.'},
+  {id:'r3', title:'Imaging Report',    sub:'Chest X-ray report',             date:'Feb 22', icon:'📷', type:'Imaging',  summary:'Clear lung fields. Heart size within normal limits. No acute cardiopulmonary process identified.'},
+  {id:'r4', title:'Medication Review', sub:'Care-plan update',               date:'Feb 14', icon:'💊', type:'Medication',summary:'Lisinopril 10mg reviewed and confirmed. ACE inhibitor tolerance good, no cough reported.'},
+  {id:'r5', title:'Specialist Consult',sub:'Cardiology referral notes',      date:'Jan 30', icon:'❤️', type:'Visit',    summary:'Echocardiogram results normal. Continued lifestyle modifications recommended. Follow-up in 12 months.'},
+];
+var MEDICATIONS = [
+  {id:'m1', name:'Lisinopril',   dose:'10 mg', schedule:'Daily · 8:00 AM', status:'unconfirmed', icon:'💊', adherence:84, instructions:'Take with or without food each morning. Avoid potassium supplements unless directed.', refill:'Apr 12'},
+  {id:'m2', name:'Atorvastatin', dose:'20 mg', schedule:'Daily · 9:00 PM', status:'confirmed',   icon:'💊', adherence:91, instructions:'Take in the evening. Avoid grapefruit products.', refill:'Apr 5'},
+  {id:'m3', name:'Vitamin D3',   dose:'2000 IU',schedule:'Daily · Morning', status:'confirmed',  icon:'🌤️', adherence:76, instructions:'Take with a meal for best absorption.', refill:'May 1'},
+];
+var CARE_TEAM = [
+  {name:'Dr. Sarah Mitchell', role:'Primary Care Physician', initials:'SM', status:'active',   next:'Mar 28'},
+  {name:'James Hooper, RN',   role:'Care Coordinator',       initials:'JH', status:'active',   next:'Mar 25'},
+  {name:'Dr. Priya Anand',    role:'Cardiologist',           initials:'PA', status:'consulted',next:'Jan 2026'},
+  {name:'Lisa Park, RD',      role:'Registered Dietitian',   initials:'LP', status:'new',      next:'Apr 3'},
+];
+var CLINICIAN_PATIENTS = [
+  {name:'Ed Valentine',  risk:'high',   reason:'Elevated resting HR + sleep deficit',   detail:'74 bpm · 6h 42m sleep', initials:'EV', last:'8:12 AM'},
+  {name:'Maria Chen',    risk:'medium', reason:'Medication adherence variance',         detail:'2 missed doses this week', initials:'MC', last:'Yesterday'},
+  {name:'James Patel',   risk:'low',    reason:'Stable metrics across all vitals',      detail:'All values within range', initials:'JP', last:'2 days ago'},
+  {name:'Anika Rosario', risk:'medium', reason:'BP trending upward this week',          detail:'138/86 avg · up from 128/80', initials:'AR', last:'6:00 AM'},
+  {name:'Tom Westfield', risk:'low',    reason:'Post-intervention follow-up',           detail:'Metrics improving post-discharge', initials:'TW', last:'Yesterday'},
+];
+var CAL_EVENTS = [
+  {day:23, label:'Care Coordinator Check-in', time:'10:00 AM'},
+  {day:25, label:'Blood Pressure Check',       time:'8:00 AM'},
+  {day:28, label:'Dr. Mitchell Follow-up',     time:'2:30 PM'},
+  {day:30, label:'Medication Refill Reminder', time:'All day'},
+];
+
+// ════════════════════════════════════════════════════════════════
+// ELEMENT HELPERS
+// ════════════════════════════════════════════════════════════════
+function el(tag, cls, html) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html) n.innerHTML = html;
+  return n;
+}
+function div(cls, html) { return el('div', cls, html); }
+function btn(cls, html, fn) {
+  var b = el('button', cls, html);
+  if (fn) b.addEventListener('click', fn);
+  return b;
+}
+function card(cls, html) { return div('card ' + (cls||''), html); }
+
+function sparkline(data, color) {
+  var w=80, h=36, p=3;
+  var mn=Math.min.apply(null,data), mx=Math.max.apply(null,data), rng=mx-mn||1;
+  var pts=data.map(function(v,i){
+    return ((p+(i/(data.length-1))*(w-2*p)).toFixed(1))+','+
+           ((h-p-(((v-mn)/rng)*(h-2*p))).toFixed(1));
+  }).join(' ');
+  var last=pts.split(' ').pop().split(',');
+  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" class="sparkline">'+
+    '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>'+
+    '<circle cx="'+last[0]+'" cy="'+last[1]+'" r="3" fill="'+color+'"/>'+
+    '</svg>';
+}
+
+function trendIcon(t) {
+  if (t==='up')   return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>';
+  if (t==='down') return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>';
+  return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+}
+
+function healthRing(score) {
+  var r=30, c=2*Math.PI*r, d=(score/100)*c;
+  var col = score>=80 ? '#4ade80' : score>=60 ? 'var(--gold-light)' : '#f87171';
+  return '<svg width="80" height="80" viewBox="0 0 80 80">'+
+    '<circle cx="40" cy="40" r="'+r+'" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="5"/>'+
+    '<circle cx="40" cy="40" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-dasharray="'+d+' '+c+'" stroke-dashoffset="'+(c*.25)+'" stroke-linecap="round" transform="rotate(-90 40 40)" opacity=".9"/>'+
+    '</svg>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// ROUTING
+// ════════════════════════════════════════════════════════════════
+function navigate(id, params) { S.stack.push({id:id, params:params||{}}); render(); }
+function goBack()             { if (S.stack.length) { S.stack.pop(); render(); } }
+function switchTab(tab)       { S.tab=tab; S.stack=[]; S.platform='patient'; render(); }
+function switchPlatform(plat) { S.platform=plat; S.stack=[]; render(); }
+
+function currentScreen() {
+  return S.stack.length ? S.stack[S.stack.length-1] : {id:S.tab, params:{}};
+}
+
+var SCREEN_TITLES = {
+  home:'Home', care:'Care', monitor:'Monitor', records:'Records', more:'More',
+  'alert-detail':'Alert Detail', 'medication-detail':'Medication', 'metric-detail':'Metric Detail',
+  'record-detail':'Record', 'care-plan':'Care Plan', escalation:'Escalation Flow',
+  settings:'Settings', profile:'My Profile', calendar:'Calendar', devices:'Connected Devices',
+  'care-team':'Care Team', 'disease-programs':'Condition Programs', support:'Support',
+  notifications:'Notifications', clinician:'Clinician', employer:'Employer'
+};
+
+function render() {
+  var cur = currentScreen();
+  var title = S.platform==='clinician' ? 'Clinician' : S.platform==='employer' ? 'Employer' : (SCREEN_TITLES[cur.id] || 'Home');
+  document.getElementById('screenTitle').textContent = title;
+
+  var showBack = S.stack.length > 0;
+  document.getElementById('btnBack').classList.toggle('hidden', !showBack);
+  document.getElementById('brandMark').classList.toggle('hidden', showBack);
+
+  // Tab bar active state
+  document.querySelectorAll('#tabbar .tab-btn').forEach(function(b) {
+    var active = b.dataset.tab === S.tab && S.stack.length === 0 && S.platform === 'patient';
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', String(active));
+  });
+
+  // Platform bar
+  document.querySelectorAll('#plat-bar .plat-btn').forEach(function(b) {
+    var active = b.dataset.plat === S.platform;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', String(active));
+  });
+  document.getElementById('plat-bar').classList.toggle('hidden', S.stack.length > 0);
+
+  // Render screen
+  var scroller = document.getElementById('scroller');
+  scroller.innerHTML = '';
+  scroller.scrollTop = 0;
+
+  var wrap = div('screen-pad');
+  var content = div('stack anim');
+
+  if      (S.platform==='clinician')           renderClinician(content);
+  else if (S.platform==='employer')            renderEmployer(content);
+  else if (cur.id==='home')                    renderHome(content);
+  else if (cur.id==='care')                    renderCare(content);
+  else if (cur.id==='monitor')                 renderMonitor(content);
+  else if (cur.id==='records')                 renderRecords(content);
+  else if (cur.id==='more')                    renderMore(content);
+  else if (cur.id==='alert-detail')            renderAlertDetail(content, cur.params);
+  else if (cur.id==='medication-detail')       renderMedicationDetail(content, cur.params);
+  else if (cur.id==='metric-detail')           renderMetricDetail(content, cur.params);
+  else if (cur.id==='record-detail')           renderRecordDetail(content, cur.params);
+  else if (cur.id==='care-plan')               renderCarePlan(content);
+  else if (cur.id==='escalation')              renderEscalation(content);
+  else if (cur.id==='profile')                 renderProfile(content);
+  else if (cur.id==='calendar')                renderCalendar(content);
+  else if (cur.id==='devices')                 renderDevices(content);
+  else if (cur.id==='care-team')               renderCareTeam(content);
+  else if (cur.id==='disease-programs')        renderDiseasePrograms(content);
+  else if (cur.id==='notifications')           renderNotifications(content);
+  else if (cur.id==='settings')                renderSettings(content);
+  else if (cur.id==='support')                 renderSupport(content);
+  else renderHome(content);
+
+  wrap.appendChild(content);
+  scroller.appendChild(wrap);
+
+  // Re-init layout in case topbar height changed
+  initLayout();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCREEN RENDERERS
+// ════════════════════════════════════════════════════════════════
+
+function renderHome(root) {
+  // Hero
+  var hero = div('card card-hero');
+  hero.innerHTML = '<div class="hero-content">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+      '<div>'+
+        '<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px">Good morning</div>'+
+        '<div style="font-family:var(--font-d);font-size:22px;font-weight:300;color:#fff">Ed Valentine</div>'+
+      '</div>'+
+      '<div class="avatar av-md" style="background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2)">E</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">'+
+      healthRing(78)+
+      '<div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Health Score</div>'+
+        '<div style="font-family:var(--font-d);font-size:36px;font-weight:300;color:#fff;line-height:1">78<span style="font-size:18px;color:rgba(255,255,255,.45)">/100</span></div>'+
+        '<div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:3px">Good · 4 active signals</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<div class="badge badge-gold" style="font-size:11px"><span class="dot dot-green"></span>Monitoring active</div>'+
+      '<div class="badge" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px">Mon, Mar 23</div>'+
+    '</div>'+
+  '</div>';
+  root.appendChild(hero);
+
+  // Alert
+  var alertCard = div('card card-warn', '');
+  alertCard.style.cursor = 'pointer';
+  alertCard.innerHTML = '<div class="row">'+
+    '<div style="display:flex;gap:11px;align-items:center">'+
+      '<div class="item-icon ic-warn" style="font-size:17px">⚠️</div>'+
+      '<div>'+
+        '<div style="font-weight:700;font-size:14px;color:#92400E">1 high-priority alert</div>'+
+        '<div class="t-small" style="margin-top:2px;color:#92400E;opacity:.8">Elevated resting heart rate detected</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="font-size:22px;color:var(--gold);flex-shrink:0">›</div>'+
+  '</div>';
+  alertCard.addEventListener('click', function() { navigate('alert-detail', {alert:ALERTS[0]}); });
+  root.appendChild(alertCard);
+
+  // Metrics
+  var mHead = div('section-head');
+  mHead.innerHTML = '<div class="t-label">Daily Values</div><button class="btn-ghost">See all</button>';
+  root.appendChild(mHead);
+
+  var mGrid = div('grid2');
+  METRICS.forEach(function(m) {
+    var mc = div('metric-card');
+    mc.style.cursor = 'pointer';
+    mc.innerHTML = '<div class="t-label" style="margin-bottom:4px">'+m.label+'</div>'+
+      '<div class="t-num">'+m.value+' <span style="font-size:13px;color:var(--text-3);font-family:var(--font)">'+m.unit+'</span></div>'+
+      '<div style="display:flex;align-items:center;gap:4px;margin-top:4px">'+trendIcon(m.trend)+'<span class="t-small">'+m.sub.split('·')[0].trim()+'</span></div>';
+    mc.addEventListener('click', function() { navigate('metric-detail', {metric:m}); });
+    mGrid.appendChild(mc);
+  });
+  root.appendChild(mGrid);
+
+  // Quick Access
+  var qa = card('', '<div class="row" style="margin-bottom:12px"><div class="t-h4">Quick Access</div><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>');
+  var qGrid = div('grid2');
+  qGrid.style.gap = '8px';
+  [['Care Plan','📋','care-plan',{}],['Medications','💊','medication-detail',{med:MEDICATIONS[0]}],['My Values','📊','metric-detail',{metric:METRICS[0]}],['Records','🗂️','records',null]].forEach(function(item) {
+    var b = document.createElement('button');
+    b.style.cssText = 'background:var(--surface);border:1px solid var(--line);border-radius:var(--r16);padding:13px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:var(--touch);transition:background .12s';
+    b.innerHTML = '<span style="font-size:20px">'+item[1]+'</span><span style="font-weight:700;font-size:13px;color:var(--text-1)">'+item[0]+'</span>';
+    b.addEventListener('click', function() {
+      if (item[3]===null) switchTab(item[2]);
+      else navigate(item[2], item[3]);
+    });
+    qGrid.appendChild(b);
+  });
+  qa.appendChild(qGrid);
+  root.appendChild(qa);
+
+  // Today's Signals
+  var sig = card('');
+  sig.innerHTML = '<div class="row" style="margin-bottom:12px"><div class="t-h4">Today\'s Signals</div><button class="btn-ghost" id="viewFlow">View flow ›</button></div>';
+  var sigList = div('stack-s');
+  ALERTS.forEach(function(a) {
+    var row = div('list-item');
+    row.innerHTML = '<div class="dot '+{high:'dot-red',medium:'dot-warn',low:'dot-grey'}[a.priority]+'"></div>'+
+      '<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+a.title+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">'+a.time+'</div></div>'+
+      '<div class="badge badge-'+a.priority+'" style="font-size:10.5px">'+a.priority.charAt(0).toUpperCase()+a.priority.slice(1)+'</div>';
+    row.addEventListener('click', function() { navigate('alert-detail', {alert:a}); });
+    sigList.appendChild(row);
+  });
+  sig.appendChild(sigList);
+  sig.querySelector('#viewFlow').addEventListener('click', function() { navigate('escalation'); });
+  root.appendChild(sig);
+}
+
+function renderCare(root) {
+  root.appendChild(div('card card-hero', '<div class="hero-content">'+
+    '<div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Your care hub</div>'+
+    '<div class="t-hero" style="color:#fff;margin-bottom:8px">Structured preventive care</div>'+
+    '<div style="color:rgba(255,255,255,.7);font-size:13.5px;line-height:1.5">Medications, diagnoses, care team, and condition programs — in one place.</div>'+
+  '</div>'));
+
+  // Medications summary
+  var medCard = card('');
+  medCard.innerHTML = '<div class="row" style="margin-bottom:12px"><div class="t-h4">Medications</div><div class="badge badge-high" style="font-size:11px">1 unconfirmed</div></div>';
+  var medList = div('stack-s');
+  MEDICATIONS.forEach(function(m) {
+    var row = div('list-item');
+    row.innerHTML = '<div class="item-icon '+(m.status==='unconfirmed'?'ic-warn':'ic-green')+'" style="font-size:18px">'+m.icon+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14px">'+m.name+' <span style="font-size:12px;color:var(--text-3);font-weight:400">'+m.dose+'</span></div>'+
+      '<div class="t-tiny" style="margin-top:2px">'+m.schedule+'</div></div>'+
+      '<div class="badge badge-'+(m.status==='confirmed'?'low':'medium')+'" style="font-size:10.5px">'+(m.status==='confirmed'?'Taken':'Pending')+'</div>';
+    row.addEventListener('click', function() { navigate('medication-detail', {med:m}); });
+    medList.appendChild(row);
+  });
+  medCard.appendChild(medList);
+  root.appendChild(medCard);
+
+  // Modules
+  var modCard = card('', '<div class="t-h4" style="margin-bottom:12px">Care Modules</div>');
+  var modList = div('stack-s');
+  [['Personal Information','Profile, contact, emergency','👤','profile','ic-blue'],
+   ['Care Plan','Goals, diagnoses, interventions','📋','care-plan','ic-blue'],
+   ['Care Team','Providers and coordinators','🩺','care-team','ic-blue'],
+   ['Calendar','Follow-up and care events','📅','calendar','ic-gold'],
+   ['Disease Programs','Condition-specific pathways','⚕️','disease-programs','ic-navy']
+  ].forEach(function(item) {
+    var b = div('list-item');
+    b.innerHTML = '<div class="item-icon '+item[4]+'">'+item[2]+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14px">'+item[0]+'</div>'+
+      '<div class="t-small" style="margin-top:2px">'+item[1]+'</div></div>'+
+      '<div class="chevron">›</div>';
+    b.addEventListener('click', function() { navigate(item[3]); });
+    modList.appendChild(b);
+  });
+  modCard.appendChild(modList);
+  root.appendChild(modCard);
+}
+
+function renderMonitor(root) {
+  var hero = div('card card-hero');
+  hero.innerHTML = '<div class="hero-content">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
+      '<div><div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Continuous monitoring</div>'+
+      '<div class="t-h2" style="color:#fff">Daily values</div></div>'+
+      '<div class="badge badge-gold" style="font-size:11px"><span class="dot dot-green"></span>Live</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:0">'+
+      [['4','Active'],['3','Alerts'],['47','Days tracked']].map(function(x){
+        return '<div style="flex:1;text-align:center">'+
+          '<div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:2px">'+x[1]+'</div>'+
+          '<div style="font-family:var(--font-d);font-size:22px;font-weight:300;color:#fff">'+x[0]+'</div></div>';
+      }).join('')+
+    '</div>'+
+  '</div>';
+  root.appendChild(hero);
+
+  METRICS.forEach(function(m) {
+    var mc = card('');
+    mc.style.cursor = 'pointer';
+    mc.innerHTML = '<div class="row" style="margin-bottom:10px">'+
+      '<div><div class="t-label" style="margin-bottom:3px">'+m.label+'</div>'+
+      '<div class="t-num">'+m.value+' <span style="font-size:14px;color:var(--text-3);font-family:var(--font)">'+m.unit+'</span></div></div>'+
+      sparkline(m.history, m.color)+
+    '</div>'+
+    '<div class="row">'+
+      '<div style="display:flex;align-items:center;gap:5px">'+trendIcon(m.trend)+'<span class="t-small">'+m.sub+'</span></div>'+
+      '<div class="badge badge-'+(m.trend==='up'&&m.id==='hr'?'high':m.trend==='down'?'medium':'low')+'" style="font-size:10px">'+(m.trend==='flat'?'Stable':m.trend==='up'?'Rising':'Below target')+'</div>'+
+    '</div>';
+    mc.addEventListener('click', function() { navigate('metric-detail', {metric:m}); });
+    root.appendChild(mc);
+  });
+
+  var alertCard = card('', '<div class="row" style="margin-bottom:12px"><div class="t-h4">Active Alerts</div><div class="badge badge-high" style="font-size:11px">3 active</div></div>');
+  var aList = div('stack-s');
+  ALERTS.forEach(function(a) {
+    var item = div('list-item');
+    item.innerHTML = '<div class="dot '+{high:'dot-red',medium:'dot-warn',low:'dot-grey'}[a.priority]+'"></div>'+
+      '<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+a.title+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">'+a.time+'</div></div>'+
+      '<div class="badge badge-'+a.priority+'" style="font-size:10.5px">'+a.priority.charAt(0).toUpperCase()+a.priority.slice(1)+'</div>';
+    item.addEventListener('click', function() { navigate('alert-detail', {alert:a}); });
+    aList.appendChild(item);
+  });
+  alertCard.appendChild(aList);
+  root.appendChild(alertCard);
+}
+
+function renderRecords(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:5px">Medical history</div><div class="t-small">Longitudinal record across providers, labs, and visits.</div>'));
+
+  var search = div('search-bar');
+  search.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search records…" aria-label="Search records"/>';
+  root.appendChild(search);
+
+  var filters = document.createElement('div');
+  filters.style.cssText = 'display:flex;gap:7px;flex-wrap:wrap';
+  ['All','Lab','Visit','Imaging','Medication'].forEach(function(f,i) {
+    var b = document.createElement('button');
+    b.style.cssText = 'border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;border:1px solid var(--line);background:'+(i===0?'var(--navy)':'var(--surface)')+';color:'+(i===0?'#fff':'var(--text-2)')+';min-height:var(--touch)';
+    b.textContent = f;
+    filters.appendChild(b);
+  });
+  root.appendChild(filters);
+
+  RECORDS.forEach(function(r) {
+    var b = card('');
+    b.style.cursor = 'pointer';
+    b.innerHTML = '<div style="display:flex;gap:12px;align-items:center">'+
+      '<div class="item-icon ic-navy" style="font-size:22px">'+r.icon+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14.5px">'+r.title+'</div>'+
+      '<div class="t-small" style="margin-top:2px">'+r.sub+'</div></div>'+
+      '<div style="text-align:right;flex-shrink:0"><div class="t-tiny">'+r.date+'</div>'+
+      '<div class="badge badge-navy" style="font-size:10px;margin-top:4px">'+r.type+'</div></div>'+
+    '</div>';
+    b.addEventListener('click', function() { navigate('record-detail', {record:r}); });
+    root.appendChild(b);
+  });
+}
+
+function renderMore(root) {
+  var profile = card('');
+  profile.style.cursor = 'pointer';
+  profile.innerHTML = '<div style="display:flex;gap:14px;align-items:center">'+
+    '<div class="avatar av-lg">E</div>'+
+    '<div><div class="t-h3">Ed Valentine</div>'+
+    '<div class="t-small" style="margin-top:3px">DOB: Jan 14, 1978 · Male</div>'+
+    '<div class="t-small">MRN: 001-884-2240</div></div>'+
+    '<div class="chevron" style="margin-left:auto">›</div></div>';
+  profile.addEventListener('click', function() { navigate('profile'); });
+  root.appendChild(profile);
+
+  var listCard = card('', '<div class="t-h4" style="margin-bottom:12px">More Options</div>');
+  var list = div('stack-s');
+  [['Calendar','Appointments & follow-ups','📅','calendar','ic-blue'],
+   ['Connected Devices','Apple Watch, Health sensors','⌚','devices','ic-navy'],
+   ['Notifications','Alerts, reminders & messages','🔔','notifications','ic-warn'],
+   ['Support','Medical & technical help','🩺','support','ic-green'],
+   ['Settings','Privacy, preferences, security','⚙️','settings','ic-navy']
+  ].forEach(function(item) {
+    var b = div('list-item');
+    b.innerHTML = '<div class="item-icon '+item[4]+'">'+item[2]+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14px">'+item[0]+'</div>'+
+      '<div class="t-small" style="margin-top:1px">'+item[1]+'</div></div>'+
+      '<div class="chevron">›</div>';
+    b.addEventListener('click', function() { navigate(item[3]); });
+    list.appendChild(b);
+  });
+  listCard.appendChild(list);
+  root.appendChild(listCard);
+
+  var ver = div('', '<div class="t-tiny" style="text-align:center;padding:4px 0">Self-Care OS v3.0 · Powered by Anthropic</div>');
+  root.appendChild(ver);
+}
+
+function renderAlertDetail(root, params) {
+  var a = (params&&params.alert) ? params.alert : ALERTS[0];
+  var bgClass = {high:'card-danger', medium:'card-warn', low:'card-green'}[a.priority];
+  var emoIcon = {high:'🚨', medium:'⚠️', low:'ℹ️'}[a.priority];
+
+  root.appendChild(card(bgClass,
+    '<div style="display:flex;gap:12px;align-items:flex-start">'+
+    '<div style="font-size:30px">'+emoIcon+'</div>'+
+    '<div><div class="t-h4">'+a.title+'</div>'+
+    '<div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">'+
+    '<div class="badge badge-'+a.priority+'">'+a.priority.charAt(0).toUpperCase()+a.priority.slice(1)+' priority</div>'+
+    '<div class="badge badge-navy">'+a.time+'</div></div></div></div>'));
+
+  root.appendChild(card('',
+    '<div class="t-label" style="margin-bottom:6px">Associated metric</div>'+
+    '<div class="t-h2">'+a.metric+'</div>'+
+    '<div class="t-small" style="margin-top:4px">Baseline: '+a.baseline+'</div>'+
+    '<div class="divider"></div>'+
+    '<div class="t-body">'+a.detail+'</div>'));
+
+  root.appendChild(card('',
+    '<div class="t-h4" style="margin-bottom:9px">Recommended action</div>'+
+    '<div class="t-body">Confirm symptoms, hydration, and medication adherence. Route to care coordinator if pattern persists beyond 24 hours.</div>'));
+
+  var wf = card('', '<div class="t-h4" style="margin-bottom:13px">Control plane workflow</div>');
+  var wfList = div('stack-s');
+  ['Signal anomaly detected','Escalation rule evaluated','Patient outreach initiated','Care-team review queue updated'].forEach(function(s) {
+    var row = div('', '<div style="display:flex;gap:10px;align-items:center">'+
+      '<div style="width:22px;height:22px;border-radius:999px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--green)">✓</div>'+
+      '<div class="t-small" style="color:var(--text-2)">'+s+'</div></div>');
+    wfList.appendChild(row);
+  });
+  wf.appendChild(wfList);
+  root.appendChild(wf);
+
+  var btnRow = div('btn-2col');
+  var b1 = document.createElement('button'); b1.className='btn-primary'; b1.textContent='Acknowledge';
+  b1.addEventListener('click', function() { showToast('Alert acknowledged','Routed to care team.'); goBack(); });
+  var b2 = document.createElement('button'); b2.className='btn-secondary'; b2.textContent='View Escalation';
+  b2.addEventListener('click', function() { navigate('escalation'); });
+  btnRow.appendChild(b1); btnRow.appendChild(b2);
+  root.appendChild(btnRow);
+}
+
+function renderMedicationDetail(root, params) {
+  var m = (params&&params.med) ? params.med : MEDICATIONS[0];
+  var hdrCard = card('',
+    '<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">'+
+    '<div class="item-icon ic-gold" style="width:52px;height:52px;border-radius:16px;font-size:24px">'+m.icon+'</div>'+
+    '<div><div class="t-h3">'+m.name+'</div><div class="t-small" style="margin-top:2px">'+m.dose+' · '+m.schedule+'</div></div></div>');
+  var kv = div('kv-grid');
+  [['Status', '<span style="color:'+(m.status==='confirmed'?'var(--green)':'var(--warn)')+';">'+(m.status==='confirmed'?'Taken today':'Unconfirmed')+'</span>'],
+   ['Adherence', m.adherence+'%'],['Refill by', m.refill],['Source','EHR sync']
+  ].forEach(function(item) {
+    kv.appendChild(div('kv-card', '<div class="kv-label">'+item[0]+'</div><div class="kv-value">'+item[1]+'</div>'));
+  });
+  hdrCard.appendChild(kv);
+  root.appendChild(hdrCard);
+
+  var adherCard = card('',
+    '<div class="row" style="margin-bottom:9px"><div class="t-h4">Adherence · 30 days</div>'+
+    '<div class="badge badge-'+(m.adherence>=90?'low':m.adherence>=75?'medium':'high')+'" style="font-size:11px">'+m.adherence+'%</div></div>'+
+    '<div class="progress"><div class="progress-fill" style="width:'+m.adherence+'%;background:'+(m.adherence>=90?'var(--green)':m.adherence>=75?'var(--warn)':'var(--danger)')+'"></div></div>'+
+    '<div class="t-small" style="margin-top:7px">Target: 90%+ · '+(m.adherence>=90?'On track':'Below target — try setting a reminder')+'</div>');
+  root.appendChild(adherCard);
+
+  root.appendChild(card('', '<div class="t-h4" style="margin-bottom:8px">Instructions</div><div class="t-body">'+m.instructions+'</div>'));
+
+  var weekCard = card('', '<div class="t-h4" style="margin-bottom:13px">This week</div>');
+  var dots = div('week-dots');
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d,i) {
+    var taken = [true,true,false,true,true,i>=5,false][i];
+    var col = div('week-dot');
+    col.innerHTML = '<div class="week-dot-circle" style="background:'+(taken?'var(--green-bg)':i===6?'var(--surface)':'var(--danger-bg)')+'">'+(taken?'✓':i===6?'—':'✗')+'</div>'+
+      '<div style="font-size:10px;color:var(--text-4);font-weight:600">'+d+'</div>';
+    dots.appendChild(col);
+  });
+  weekCard.appendChild(dots);
+  root.appendChild(weekCard);
+
+  if (m.status !== 'confirmed') {
+    var btnRow = div('btn-2col');
+    var b1 = document.createElement('button'); b1.className='btn-primary'; b1.textContent='✓ Confirm Taken';
+    b1.addEventListener('click', function() { m.status='confirmed'; showToast('Medication confirmed',m.name+' logged for today.'); render(); });
+    var b2 = document.createElement('button'); b2.className='btn-secondary'; b2.textContent='Report Issue';
+    b2.addEventListener('click', function() { showToast('Issue reported','Care coordinator notified.'); });
+    btnRow.appendChild(b1); btnRow.appendChild(b2);
+    root.appendChild(btnRow);
+  } else {
+    root.appendChild(card('card-green', '<div style="display:flex;gap:10px;align-items:center"><div style="font-size:22px">✅</div><div><div style="font-weight:700;color:var(--green)">Taken today</div><div class="t-small">Logged and synced to care team</div></div></div>'));
+  }
+}
+
+function renderMetricDetail(root, params) {
+  var m = (params&&params.metric) ? params.metric : METRICS[0];
+  root.appendChild(card('',
+    '<div class="t-label" style="margin-bottom:5px">'+m.label+'</div>'+
+    '<div class="t-num-lg">'+m.value+' <span style="font-size:16px;color:var(--text-3);font-family:var(--font)">'+m.unit+'</span></div>'+
+    '<div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">'+
+    '<div class="badge badge-'+(m.trend==='flat'?'low':m.trend==='up'?'high':'medium')+'">'+(m.trend==='flat'?'Stable':m.trend==='up'?'Rising':'Below target')+'</div>'+
+    '<div class="badge badge-navy">Updated 8:12 AM</div>'+
+    '<div class="badge badge-blue">Apple Health</div></div>'));
+
+  var chartCard = card('', '<div class="row" style="margin-bottom:13px"><div class="t-h4">7-day trend</div><div class="badge badge-navy">Mar 17–23</div></div>');
+  var bc = div('bar-chart');
+  var mx = Math.max.apply(null, m.history);
+  m.history.forEach(function(v,i) {
+    var col = div('bar-col');
+    var fill = div('bar-fill '+(i===6?'bar-gold':'bar-navy'));
+    fill.style.height = Math.round((v/mx)*70+10)+'%';
+    col.appendChild(fill);
+    col.appendChild(div('bar-lbl', ['M','T','W','T','F','S','S'][i]));
+    bc.appendChild(col);
+  });
+  chartCard.appendChild(bc);
+  root.appendChild(chartCard);
+
+  var kv = div('kv-grid');
+  [['Target', m.id==='bp'?'< 120/80':m.id==='hr'?'60–80 bpm':m.id==='sleep'?'7–9 hrs':'8,000+'],
+   ['14-day avg', m.id==='bp'?'121/78':m.id==='hr'?'69 bpm':m.id==='sleep'?'6h 58m':'7,840'],
+   ['Source','Apple Health'],['Status','<span style="color:'+(m.trend==='flat'?'var(--green)':m.trend==='up'?'var(--danger)':'var(--warn)')+';">'+(m.trend==='flat'?'Stable':m.trend==='up'?'Rising':'Below target')+'</span>']
+  ].forEach(function(item) { kv.appendChild(div('kv-card','<div class="kv-label">'+item[0]+'</div><div class="kv-value">'+item[1]+'</div>')); });
+  root.appendChild(div('', '') ); // spacing
+  root.appendChild(div('', function(){ var d=div('kv-grid');kv.childNodes.forEach(function(c){d.appendChild(c.cloneNode(true));});return d; }() ));
+
+  root.appendChild(card('',
+    '<div class="t-h4" style="margin-bottom:9px">💡 AI Insight</div>'+
+    '<div class="t-body">'+(m.id==='bp'?'Blood pressure consistently within target for 14 days. The ACE inhibitor appears effective. Continue current regimen.':m.id==='hr'?'Resting heart rate elevated overnight, correlating with reduced sleep duration. Prioritize 7+ hours of sleep tonight.':m.id==='sleep'?'Sleep below target for 3 consecutive nights. Consider reducing caffeine after 2 PM and establishing a consistent bedtime.':'Step count on pace. This level of activity supports cardiovascular and metabolic health goals.')+'</div>'));
+}
+
+function renderRecordDetail(root, params) {
+  var r = (params&&params.record) ? params.record : RECORDS[0];
+  var hdr = card('',
+    '<div style="display:flex;gap:12px;align-items:center;margin-bottom:13px">'+
+    '<div class="item-icon ic-navy" style="width:52px;height:52px;font-size:26px;border-radius:16px">'+r.icon+'</div>'+
+    '<div><div class="t-h3">'+r.title+'</div><div class="t-small" style="margin-top:2px">'+r.sub+'</div></div></div>');
+  var kv = div('kv-grid');
+  [['Date',r.date],['Type',r.type],['Status','<span style="color:var(--green)">Reviewed</span>'],['Shared','Care team']].forEach(function(item){
+    kv.appendChild(div('kv-card','<div class="kv-label">'+item[0]+'</div><div class="kv-value">'+item[1]+'</div>'));
+  });
+  hdr.appendChild(kv);
+  root.appendChild(hdr);
+  root.appendChild(card('', '<div class="t-h4" style="margin-bottom:9px">Summary</div><div class="t-body">'+r.summary+'</div>'));
+
+  var shareCard = card('', '<div class="t-h4" style="margin-bottom:12px">Sharing & routing</div>');
+  var sl = div('stack-s');
+  [{name:'Dr. Sarah Mitchell',role:'Primary Care',icon:'🩺'},{name:'James Hooper, RN',role:'Care Coordinator',icon:'👤'}].forEach(function(p) {
+    sl.appendChild(div('list-item',
+      '<div class="item-icon ic-blue" style="font-size:16px">'+p.icon+'</div>'+
+      '<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+p.name+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">Shared · '+p.role+'</div></div>'+
+      '<div class="badge badge-low" style="font-size:10px">Active</div>'));
+  });
+  shareCard.appendChild(sl);
+  root.appendChild(shareCard);
+
+  var br = div('btn-2col');
+  var b1=document.createElement('button');b1.className='btn-primary';b1.textContent='Share Record';
+  b1.addEventListener('click',function(){showToast('Record shared','Sent to care team.');});
+  var b2=document.createElement('button');b2.className='btn-secondary';b2.textContent='Download PDF';
+  b2.addEventListener('click',function(){showToast('Downloading…','PDF ready shortly.');});
+  br.appendChild(b1);br.appendChild(b2);
+  root.appendChild(br);
+}
+
+function renderCarePlan(root) {
+  root.appendChild(div('card card-hero',
+    '<div class="hero-content"><div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Active care plan</div>'+
+    '<div class="t-hero" style="color:#fff;margin-bottom:7px">Preventive care structure</div>'+
+    '<div style="color:rgba(255,255,255,.65);font-size:13px">Last updated Mar 8 · Dr. Mitchell</div></div>'));
+
+  [['🎯 Goals',['Maintain BP below 120/80 mmHg','Improve sleep duration to 7+ hours nightly','Achieve 8,000 steps daily','Medication adherence above 90%']],
+   ['🔎 Diagnoses',['Hypertension (I10) · Controlled','Sleep quality risk · Monitoring','Hyperlipidemia (E78.5) · Mild']],
+   ['💡 Interventions',['Morning Lisinopril adherence confirmation','Daily activity target tracking','Hydration reminders (8 AM, 12 PM, 5 PM)','Weekly blood pressure log review']],
+   ['📅 Follow-ups',['Dr. Mitchell — Mar 28, 2:30 PM','Medication review — Apr 12','Lipid panel — Jun 2025']],
+   ['👥 Care Team',['Dr. Sarah Mitchell · Primary Care','James Hooper · Care Coordinator','Dr. Priya Anand · Cardiology (PRN)']]
+  ].forEach(function(section) {
+    var c = card('', '<div class="t-h4" style="margin-bottom:11px">'+section[0]+'</div>');
+    var list = div('stack-s');
+    section[1].forEach(function(item) {
+      list.appendChild(div('list-item','<div class="dot dot-green"></div><div class="t-small" style="color:var(--text-2)">'+item+'</div>'));
+    });
+    c.appendChild(list);
+    root.appendChild(c);
+  });
+}
+
+function renderEscalation(root) {
+  root.appendChild(card('',
+    '<div class="t-label" style="margin-bottom:6px">Escalation Simulation</div>'+
+    '<div class="t-h2" style="margin-bottom:8px">How deterioration becomes intervention</div>'+
+    '<div class="t-body">This demonstrates how the Self-Care OS converts continuous health signals into preventive care workflows before a patient reaches a high-cost event.</div>'));
+
+  var steps = [
+    {icon:'😴',title:'Sleep deficit detected',body:'Wearable data shows 6h 42m — below the 7h minimum threshold for 3 consecutive nights.'},
+    {icon:'💓',title:'Resting HR rises above baseline',body:'Heart rate of 74 bpm detected. Baseline 66–69 bpm. Anomaly flag triggered.'},
+    {icon:'🤖',title:'AI risk model flags deterioration',body:'Pattern matching against 47-day personal baseline identifies a combined sleep-HR deterioration cluster.'},
+    {icon:'⚙️',title:'Control plane evaluates rules',body:'Self-Care OS evaluates priority, patient history, care team availability, and intervention protocol.'},
+    {icon:'📲',title:'Patient outreach initiated',body:'Push notification sent to Ed. Confirmation requested for symptoms, hydration, and medication adherence.'},
+    {icon:'👩‍⚕️',title:'Clinician review triggered',body:'If no response within 2 hours, case escalated to care coordinator for direct outreach.'},
+  ];
+
+  var tlCard = card('', '<div class="t-h4" style="margin-bottom:15px">Escalation timeline</div>');
+  var tl = div('tl');
+
+  function redrawSteps() {
+    tl.innerHTML = '';
+    steps.forEach(function(s,i) {
+      var item = div('tl-item');
+      item.style.opacity = i<=S.simStep ? '1' : '0.28';
+      item.style.transition = 'opacity .35s';
+      var spine = div('tl-spine');
+      var dot = div('tl-dot '+(i<=S.simStep?'filled':''));
+      var line = div('tl-line');
+      spine.appendChild(dot);
+      spine.appendChild(line);
+      var body = div('tl-body',
+        '<div style="display:flex;gap:7px;align-items:center;margin-bottom:3px">'+
+        '<span style="font-size:15px">'+s.icon+'</span>'+
+        '<div style="font-weight:700;font-size:13.5px;color:var(--text-1)">'+s.title+'</div></div>'+
+        '<div class="t-small">'+s.body+'</div>');
+      item.appendChild(spine);
+      item.appendChild(body);
+      tl.appendChild(item);
+    });
+    var simBtn = tlCard.querySelector('.sim-btn');
+    if (simBtn) simBtn.textContent = S.simStep>=steps.length-1 ? 'Reset Simulation ↺' : 'Advance Simulation →';
+  }
+
+  redrawSteps();
+  tlCard.appendChild(tl);
+  var simBtn = document.createElement('button');
+  simBtn.className = 'btn-primary sim-btn';
+  simBtn.style.marginTop = '16px';
+  simBtn.textContent = 'Advance Simulation →';
+  simBtn.addEventListener('click', function() {
+    S.simStep = S.simStep<steps.length-1 ? S.simStep+1 : 0;
+    redrawSteps();
+  });
+  tlCard.appendChild(simBtn);
+  root.appendChild(tlCard);
+
+  root.appendChild(div('card card-hero',
+    '<div class="hero-content">'+
+    '<div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Key outcome</div>'+
+    '<div style="font-family:var(--font-d);font-size:17px;font-weight:300;color:#fff;line-height:1.45">By detecting deterioration 18–36 hours earlier, this workflow avoids an estimated $3,200–$8,400 ER escalation event.</div>'+
+    '</div>'));
+}
+
+function renderProfile(root) {
+  root.appendChild(card('',
+    '<div style="text-align:center;padding:8px 0 16px">'+
+    '<div class="avatar av-lg" style="margin:0 auto 12px">E</div>'+
+    '<div class="t-h3">Ed Valentine</div>'+
+    '<div class="t-small" style="margin-top:4px">Patient · Member since Jan 2024</div>'+
+    '<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">'+
+    '<div class="badge badge-low">Active plan</div><div class="badge badge-blue">Connected</div></div></div>'));
+
+  var fields = [['Date of birth','January 14, 1978'],['Sex','Male'],['MRN','001-884-2240'],
+    ['Insurance','BlueCross PPO · #BC-7724881'],['Primary care','Dr. Sarah Mitchell'],
+    ['Emergency contact','Linda Valentine · (772) 555-0192'],['Phone','(772) 555-0134'],
+    ['Email','ed.valentine@email.com']];
+  var infoCard = card('', '<div class="t-h4" style="margin-bottom:12px">Personal Information</div>');
+  fields.forEach(function(f) {
+    infoCard.innerHTML += '<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">'+
+      '<div class="t-small" style="color:var(--text-3)">'+f[0]+'</div>'+
+      '<div class="t-small" style="font-weight:600;text-align:right">'+f[1]+'</div></div>';
+  });
+  root.appendChild(infoCard);
+
+  var editBtn = document.createElement('button');
+  editBtn.className='btn-secondary'; editBtn.textContent='Edit Profile';
+  editBtn.addEventListener('click', function(){showToast('Edit mode','Profile editing coming soon.');});
+  root.appendChild(editBtn);
+}
+
+function renderCalendar(root) {
+  var calCard = card('');
+  calCard.innerHTML = '<div class="row" style="margin-bottom:14px">'+
+    '<div class="t-h4">March 2026</div>'+
+    '<div style="display:flex;gap:6px">'+
+    '<button style="width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center">'+
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>'+
+    '<button style="width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center">'+
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div></div>';
+  var cg = div('cal-grid');
+  ['S','M','T','W','T','F','S'].forEach(function(d){ cg.appendChild(div('cal-hdr',d)); });
+  var firstDay=6, daysInMonth=31, today=23;
+  for(var i=0;i<firstDay;i++) cg.appendChild(div(''));
+  for(var d=1;d<=daysInMonth;d++) {
+    var hasEv = CAL_EVENTS.some(function(e){return e.day===d;});
+    cg.appendChild(div('cal-day'+(d===today?' today':'')+(hasEv?' has-event':''), String(d)));
+  }
+  calCard.appendChild(cg);
+  root.appendChild(calCard);
+
+  var evCard = card('', '<div class="t-h4" style="margin-bottom:12px">Upcoming events</div>');
+  var evList = div('stack-s');
+  CAL_EVENTS.forEach(function(ev) {
+    evList.appendChild(div('list-item',
+      '<div class="item-icon ic-blue" style="font-size:16px">📅</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:13.5px">'+ev.label+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">Mar '+ev.day+' · '+ev.time+'</div></div>'+
+      '<div class="badge badge-blue" style="font-size:10px">Mar '+ev.day+'</div>'));
+  });
+  evCard.appendChild(evList);
+  root.appendChild(evCard);
+}
+
+function renderDevices(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Connected devices</div><div class="t-small">Health sensors synced to your profile.</div>'));
+  [{name:'Apple Watch Series 9',icon:'⌚',connected:true,data:'HR, SpO2, Steps, Sleep, ECG',last:'2 min ago'},
+   {name:'Omron BP Monitor',icon:'💉',connected:true,data:'Blood pressure, HR',last:'8:05 AM'},
+   {name:'iPhone Health',icon:'📱',connected:true,data:'Activity, Sleep, Steps',last:'Continuous'},
+   {name:'Withings Scale',icon:'⚖️',connected:false,data:'Weight, BMI, Body fat',last:'3 days ago'}
+  ].forEach(function(d) {
+    var c = card('');
+    c.innerHTML = '<div style="display:flex;gap:12px;align-items:center">'+
+      '<div class="item-icon '+(d.connected?'ic-blue':'ic-navy')+'" style="font-size:22px">'+d.icon+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14px">'+d.name+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">Last sync: '+d.last+'</div></div>'+
+      '<div class="badge badge-'+(d.connected?'low':'high')+'">'+( d.connected?'Connected':'Offline')+'</div></div>'+
+      (d.connected?'<div class="t-small" style="margin-top:9px;padding-left:52px;color:var(--text-3)">'+d.data+'</div>':'');
+    root.appendChild(c);
+  });
+  var ab = document.createElement('button'); ab.className='btn-secondary'; ab.textContent='+ Add a device';
+  ab.addEventListener('click',function(){showToast('Coming soon','Device pairing in next release.');});
+  root.appendChild(ab);
+}
+
+function renderCareTeam(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Your care team</div><div class="t-small">Providers and coordinators with access to your care plan.</div>'));
+  CARE_TEAM.forEach(function(p) {
+    root.appendChild(card('',
+      '<div style="display:flex;gap:12px;align-items:center">'+
+      '<div class="avatar av-md">'+p.initials+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:14.5px">'+p.name+'</div>'+
+      '<div class="t-small" style="margin-top:2px">'+p.role+'</div>'+
+      '<div class="t-tiny" style="margin-top:3px">Next: '+p.next+'</div></div>'+
+      '<div class="badge badge-'+(p.status==='active'?'low':p.status==='new'?'blue':'navy')+'" style="font-size:10.5px">'+p.status.charAt(0).toUpperCase()+p.status.slice(1)+'</div></div>'));
+  });
+}
+
+function renderDiseasePrograms(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Condition programs</div><div class="t-small">Condition-specific care pathways tailored to your diagnoses.</div>'));
+  [{name:'Hypertension Management',icon:'❤️',enrolled:true,progress:68,desc:'Blood pressure control, medication adherence, lifestyle interventions.'},
+   {name:'Sleep Health Program',icon:'😴',enrolled:true,progress:42,desc:'Sleep hygiene, duration tracking, fatigue-HR correlation monitoring.'},
+   {name:'Cardiovascular Prevention',icon:'🫀',enrolled:false,progress:0,desc:'Lipid management, activity goals, and cardiac event risk reduction.'},
+   {name:'Metabolic Health',icon:'🔬',enrolled:false,progress:0,desc:'Blood glucose monitoring, dietary coaching, and BMI tracking.'}
+  ].forEach(function(p) {
+    var c = card('');
+    c.innerHTML = '<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:'+(p.enrolled?'12px':'0')+'">'+
+      '<div class="item-icon '+(p.enrolled?'ic-blue':'ic-navy')+'" style="font-size:22px">'+p.icon+'</div>'+
+      '<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+      '<div style="font-weight:700;font-size:14px">'+p.name+'</div>'+
+      (p.enrolled?'<div class="badge badge-low" style="font-size:10px">Enrolled</div>':'')+
+      '</div><div class="t-small" style="margin-top:4px">'+p.desc+'</div></div></div>'+
+      (p.enrolled?'<div class="row" style="margin-bottom:5px"><div class="t-tiny">Progress</div><div class="t-tiny">'+p.progress+'%</div></div>'+
+      '<div class="progress"><div class="progress-fill" style="width:'+p.progress+'%;background:'+(p.progress>60?'var(--green)':'var(--navy-mid)')+'"></div></div>':
+      '<button class="btn-secondary" style="margin-top:12px;font-size:13px;padding:10px">Enroll in program</button>');
+    root.appendChild(c);
+  });
+}
+
+function renderNotifications(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Notifications</div><div class="t-small">Manage alert preferences and notification channels.</div>'));
+  var pc = card('', '<div class="t-h4" style="margin-bottom:12px">Alert preferences</div>');
+  [['Medication reminders','Daily dose confirmation alerts',true],
+   ['Alert notifications','High and medium priority health alerts',true],
+   ['Care team messages','Messages from your clinical team',true],
+   ['Appointment reminders','24h and 1h before appointments',true],
+   ['Weekly health summary','Sunday evening digest',false],
+   ['Research & tips','Condition-specific health insights',false]
+  ].forEach(function(item) {
+    var row = div('');
+    row.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)';
+    row.innerHTML='<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+item[0]+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">'+item[1]+'</div></div>'+
+      '<div class="toggle'+(item[2]?'':' off')+'"></div>';
+    row.querySelector('.toggle').addEventListener('click',function(){ this.classList.toggle('off'); });
+    pc.appendChild(row);
+  });
+  root.appendChild(pc);
+}
+
+function renderSettings(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Settings</div><div class="t-small">Privacy, security, and app preferences.</div>'));
+  [{title:'Security',items:[['Face ID / Biometrics','On','toggle'],['Auto-lock','5 minutes','value'],['Change passcode','','chevron']]},
+   {title:'Privacy',items:[['Data sharing','Care team only','value'],['Usage analytics','Opt out','value'],['Download my data','','chevron'],['Delete account','','danger']]},
+   {title:'App',items:[['Theme','Light','value'],['Language','English (US)','value'],['Haptics','On','toggle'],['App version','3.0.0','value']]}
+  ].forEach(function(g) {
+    var c = card('', '<div class="t-h4" style="margin-bottom:12px">'+g.title+'</div>');
+    g.items.forEach(function(item) {
+      var row = div('');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)';
+      row.innerHTML = '<div style="font-weight:600;font-size:13.5px;'+(item[2]==='danger'?'color:var(--danger)':'')+'">' + item[0]+'</div>'+
+        (item[2]==='toggle'?'<div class="toggle"></div>':item[2]==='value'?'<div class="t-small" style="color:var(--text-3)">'+item[1]+'</div>':item[2]==='danger'?'':'<div class="chevron" style="font-size:18px">›</div>');
+      var tog = row.querySelector('.toggle');
+      if (tog) tog.addEventListener('click', function(){ this.classList.toggle('off'); });
+      c.appendChild(row);
+    });
+    root.appendChild(c);
+  });
+
+  var so = document.createElement('button'); so.className='btn-secondary'; so.style.color='var(--danger)'; so.textContent='Sign out';
+  so.addEventListener('click',function(){showToast('Signed out','See you next time, Ed.');});
+  root.appendChild(so);
+}
+
+function renderSupport(root) {
+  root.appendChild(card('', '<div class="t-h2" style="margin-bottom:6px">Support</div><div class="t-small">Medical and technical support are separated to ensure governed escalation routing.</div>'));
+  [{icon:'🩺',title:'Medical Question',sub:'Routed to care coordinator during business hours',btnLabel:'Ask care team',cls:'ic-blue'},
+   {icon:'🚨',title:'Emergency',sub:'Call 911 for life-threatening emergencies',btnLabel:'Call 911',cls:'ic-warn',danger:true},
+   {icon:'🖥️',title:'Technical Support',sub:'App issues, sync problems, account help',btnLabel:'Contact support',cls:'ic-navy'},
+   {icon:'📚',title:'Help Center',sub:'FAQs, tutorials, and documentation',btnLabel:'Browse articles',cls:'ic-navy'}
+  ].forEach(function(o) {
+    var c = card('');
+    c.innerHTML = '<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">'+
+      '<div class="item-icon '+o.cls+'" style="font-size:22px">'+o.icon+'</div>'+
+      '<div><div style="font-weight:700;font-size:14px">'+o.title+'</div>'+
+      '<div class="t-small" style="margin-top:3px">'+o.sub+'</div></div></div>';
+    var b = document.createElement('button');
+    b.className = 'btn-secondary';
+    b.style.cssText = 'font-size:13px;padding:10px;'+(o.danger?'color:var(--danger);border-color:var(--danger-bg);background:var(--danger-bg)':'');
+    b.textContent = o.btnLabel;
+    b.addEventListener('click',function(){showToast(o.title,'Coming soon in production.');});
+    c.appendChild(b);
+    root.appendChild(c);
+  });
+}
+
+function renderClinician(root) {
+  root.appendChild(div('card card-hero',
+    '<div class="hero-content">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px">'+
+    '<div><div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Clinician dashboard</div>'+
+    '<div class="t-h2" style="color:#fff">Patient escalation queue</div></div></div>'+
+    '<div style="display:flex;gap:0">'+
+    [['5','Total patients'],['2','High risk'],['3','New alerts']].map(function(x){
+      return '<div style="flex:1;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:2px">'+x[1]+'</div>'+
+        '<div style="font-family:var(--font-d);font-size:22px;font-weight:300;color:#fff">'+x[0]+'</div></div>';
+    }).join('')+'</div></div>'));
+
+  var srch = div('search-bar');
+  srch.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search patients…" aria-label="Search patients"/>';
+  root.appendChild(srch);
+
+  CLINICIAN_PATIENTS.forEach(function(p) {
+    var c = card('');
+    c.style.cursor = 'pointer';
+    c.innerHTML = '<div style="display:flex;gap:11px;align-items:center">'+
+      '<div class="avatar av-sm">'+p.initials+'</div>'+
+      '<div style="flex:1">'+
+      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'+
+      '<div style="font-weight:700;font-size:14.5px">'+p.name+'</div>'+
+      '<div class="badge badge-'+p.risk+'" style="font-size:10.5px">'+p.risk.charAt(0).toUpperCase()+p.risk.slice(1)+'</div></div>'+
+      '<div class="t-small" style="margin-top:3px">'+p.reason+'</div>'+
+      '<div class="t-tiny" style="margin-top:2px">'+p.detail+' · '+p.last+'</div></div>'+
+      '<div class="chevron">›</div></div>';
+    c.addEventListener('click', function(){showToast(p.name,'Opening patient record…');});
+    root.appendChild(c);
+  });
+}
+
+function renderEmployer(root) {
+  root.appendChild(div('card card-hero',
+    '<div class="hero-content">'+
+    '<div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">Employer analytics</div>'+
+    '<div class="t-hero" style="color:#fff;margin-bottom:8px">Population health insights</div>'+
+    '<div style="color:rgba(255,255,255,.7);font-size:13.5px;line-height:1.5">Workforce health signals converted into actionable prevention opportunities.</div>'+
+    '</div>'));
+
+  var kpiGrid = div('grid2');
+  [['👥','Employees','2,340','↑ 12 this week'],['⚠️','Risks','34','↑ 4 from last week'],['✅','Interventions','19','↑ 7 this month'],['🏥','ER avoided','8','$42k est. savings']].forEach(function(k) {
+    kpiGrid.appendChild(div('metric-card',
+      '<div class="t-label" style="margin-bottom:4px">'+k[0]+' '+k[1]+'</div>'+
+      '<div class="t-num">'+k[2]+'</div>'+
+      '<div class="t-small" style="margin-top:3px;color:'+(k[3].includes('↑')?'var(--green)':'var(--text-3)')+'">'+k[3]+'</div>'));
+  });
+  root.appendChild(kpiGrid);
+
+  var segCard = card('', '<div class="t-h4" style="margin-bottom:13px">Population segments</div>');
+  [['Hypertension',612,18,'#1D4ED8',29],['Diabetes',284,11,'#0F766E',18],['Sleep / Stress',438,21,'#C2410C',34],['Musculoskeletal',355,7,'#7C3AED',14]].forEach(function(s) {
+    segCard.innerHTML += '<div style="margin-top:13px"><div class="row" style="margin-bottom:5px">'+
+      '<div style="font-weight:600;font-size:13.5px">'+s[0]+'</div>'+
+      '<div class="t-tiny">'+s[1]+' employees · '+s[2]+' risks</div></div>'+
+      '<div class="progress"><div class="progress-fill" style="width:'+s[4]+'%;background:'+s[3]+'"></div></div></div>';
+  });
+  root.appendChild(segCard);
+
+  var pathCard = card('', '<div class="t-h4" style="margin-bottom:13px">Prevention-to-cost pathway</div>');
+  var stepList = div('step-list');
+  [['Rising sleep and adherence variance detected','Early signal'],
+   ['At-risk cluster identified in hypertension cohort','Population insight'],
+   ['Targeted intervention launched','Nurse + digital outreach'],
+   ['Projected ER utilization reduced','Avoided high-cost events']
+  ].forEach(function(x,i) {
+    var item = div('step-item');
+    item.innerHTML = '<div class="step-num '+(i===3?'gold':'')+'">'+(i+1)+'</div>'+
+      '<div class="list-item" style="flex:1"><div>'+
+      '<div style="font-weight:700;font-size:13.5px">'+x[0]+'</div>'+
+      '<div class="t-tiny" style="margin-top:3px">'+x[1]+'</div></div></div>';
+    stepList.appendChild(item);
+  });
+  pathCard.appendChild(stepList);
+  root.appendChild(pathCard);
+
+  root.appendChild(div('card card-hero',
+    '<div class="hero-content">'+
+    '<div class="t-label" style="color:rgba(255,255,255,.55);margin-bottom:6px">AI Population Insight</div>'+
+    '<div style="font-family:var(--font-d);font-size:17px;font-weight:300;color:#fff;line-height:1.45">Hypertension risk cluster identified in employees with under 5 hours of sleep and inconsistent medication adherence. Targeted intervention recommended.</div>'+
+    '</div>'));
+}
+
+// ════════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════════
+var _toastTimer;
+function showToast(title, body) {
+  var t = document.getElementById('toast');
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastBody').textContent = body || '';
+  t.classList.remove('hidden');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { t.classList.add('hidden'); }, 3000);
+}
+
+// ════════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ════════════════════════════════════════════════════════════════
+(function() {
+  var root = document.documentElement;
+  var btn  = document.getElementById('btnTheme');
+  var icon = document.getElementById('themeIcon');
+  var SUN  = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  var MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+  function isDark() { return root.dataset.theme==='dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme:dark)').matches); }
+  function applyTheme(dark) {
+    root.dataset.theme = dark ? 'dark' : 'light';
+    icon.innerHTML = dark ? SUN : MOON;
+    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    btn.setAttribute('aria-pressed', String(dark));
+  }
+  applyTheme(isDark());
+  btn.addEventListener('click', function() { applyTheme(!isDark()); });
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function(e) { if (!root.dataset.theme) applyTheme(e.matches); });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// ICON PICKER
+// ════════════════════════════════════════════════════════════════
+function makeSVGIcon(type) {
+  var ns='http://www.w3.org/2000/svg', s=document.createElementNS(ns,'svg');
+  s.setAttribute('width','78'); s.setAttribute('height','78'); s.setAttribute('viewBox','0 0 78 78');
+  var defs=document.createElementNS(ns,'defs'), grad=document.createElementNS(ns,'linearGradient');
+  grad.setAttribute('id','ig_'+type); grad.setAttribute('x1','0'); grad.setAttribute('y1','0'); grad.setAttribute('x2','1'); grad.setAttribute('y2','1');
+  var stops=type==='vitality'?[['0%','#C7A46A'],['100%','#9a7540']]:[['0%','#0B1F3A'],['100%','#1a3d7a']];
+  stops.forEach(function(st){ var n=document.createElementNS(ns,'stop'); n.setAttribute('offset',st[0]); n.setAttribute('stop-color',st[1]); grad.appendChild(n); });
+  defs.appendChild(grad); s.appendChild(defs);
+  var rect=document.createElementNS(ns,'rect'); rect.setAttribute('width','78'); rect.setAttribute('height','78'); rect.setAttribute('rx','19'); rect.setAttribute('fill','url(#ig_'+type+')'); s.appendChild(rect);
+  var g='#C7A46A', gl='#e8c488';
+  if(type==='pulse'){
+    var pl=document.createElementNS(ns,'polyline'); pl.setAttribute('points','12,39 20,39 26,27 33,51 39,31 45,45 51,39 66,39'); pl.setAttribute('fill','none'); pl.setAttribute('stroke',g); pl.setAttribute('stroke-width','2.8'); pl.setAttribute('stroke-linecap','round'); pl.setAttribute('stroke-linejoin','round'); s.appendChild(pl);
+    var ck=document.createElementNS(ns,'circle'); ck.setAttribute('cx','39'); ck.setAttribute('cy','58'); ck.setAttribute('r','7.5'); ck.setAttribute('fill','rgba(199,164,106,.15)'); ck.setAttribute('stroke',g); ck.setAttribute('stroke-width','1.5'); s.appendChild(ck);
+    var ch=document.createElementNS(ns,'polyline'); ch.setAttribute('points','35.5,58 38,60.5 43,55'); ch.setAttribute('fill','none'); ch.setAttribute('stroke',g); ch.setAttribute('stroke-width','1.8'); ch.setAttribute('stroke-linecap','round'); ch.setAttribute('stroke-linejoin','round'); s.appendChild(ch);
+  } else if(type==='shield'){
+    var sh=document.createElementNS(ns,'path'); sh.setAttribute('d','M39 14 L55 23 L55 41 C55 52 39 60 39 60 C39 60 23 52 23 41 L23 23 Z'); sh.setAttribute('fill','rgba(199,164,106,.18)'); sh.setAttribute('stroke',g); sh.setAttribute('stroke-width','1.8'); s.appendChild(sh);
+    var chk=document.createElementNS(ns,'polyline'); chk.setAttribute('points','31,38 37,44 48,31'); chk.setAttribute('fill','none'); chk.setAttribute('stroke',gl); chk.setAttribute('stroke-width','2.8'); chk.setAttribute('stroke-linecap','round'); chk.setAttribute('stroke-linejoin','round'); s.appendChild(chk);
+  } else if(type==='vitality'){
+    var ring=document.createElementNS(ns,'circle'); ring.setAttribute('cx','39'); ring.setAttribute('cy','34'); ring.setAttribute('r','14'); ring.setAttribute('fill','rgba(255,255,255,.15)'); ring.setAttribute('stroke','rgba(255,255,255,.7)'); ring.setAttribute('stroke-width','1.8'); s.appendChild(ring);
+    var drop=document.createElementNS(ns,'path'); drop.setAttribute('d','M39 22 C39 22 45 30 45 35 C45 38.3 42.3 41 39 41 C35.7 41 33 38.3 33 35 C33 30 39 22 39 22Z'); drop.setAttribute('fill','rgba(255,255,255,.9)'); s.appendChild(drop);
+  } else if(type==='classic'){
+    var vb=document.createElementNS(ns,'rect'); vb.setAttribute('x','35'); vb.setAttribute('y','20'); vb.setAttribute('width','8'); vb.setAttribute('height','38'); vb.setAttribute('rx','4'); vb.setAttribute('fill',g); s.appendChild(vb);
+    var hb=document.createElementNS(ns,'rect'); hb.setAttribute('x','20'); hb.setAttribute('y','35'); hb.setAttribute('width','38'); hb.setAttribute('height','8'); hb.setAttribute('rx','4'); hb.setAttribute('fill',g); s.appendChild(hb);
+  } else if(type==='orbit'){
+    [20,12].forEach(function(r){ var ring=document.createElementNS(ns,'circle'); ring.setAttribute('cx','39'); ring.setAttribute('cy','39'); ring.setAttribute('r',String(r)); ring.setAttribute('fill','none'); ring.setAttribute('stroke','rgba(199,164,106,.22)'); ring.setAttribute('stroke-width','1.2'); s.appendChild(ring); });
+    var core=document.createElementNS(ns,'circle'); core.setAttribute('cx','39'); core.setAttribute('cy','39'); core.setAttribute('r','5.5'); core.setAttribute('fill',g); s.appendChild(core);
+    [[59,39,3.5],[39,19,2.5],[21,49,2]].forEach(function(c,i){ var sat=document.createElementNS(ns,'circle'); sat.setAttribute('cx',String(c[0])); sat.setAttribute('cy',String(c[1])); sat.setAttribute('r',String(c[2])); sat.setAttribute('fill','rgba(199,164,106,'+(1-i*.28)+')'); s.appendChild(sat); });
+  } else {
+    [[14,35,8,.5],[22,28,20,.65],[30,22,32,.8],[38,18,42,1],[46,24,30,.8],[54,30,18,.62],[62,35,8,.42]].forEach(function(b){ var bar=document.createElementNS(ns,'rect'); bar.setAttribute('x',String(b[0])); bar.setAttribute('y',String(b[1])); bar.setAttribute('width','5'); bar.setAttribute('height',String(b[2])); bar.setAttribute('rx','2.5'); bar.setAttribute('fill',g); bar.setAttribute('opacity',String(b[3])); s.appendChild(bar); });
+  }
+  return s;
+}
+
+var ICON_TYPES = ['pulse','shield','vitality','classic','orbit','signal'];
+var ICON_NAMES = ['Pulse','Shield','Vitality','Classic','Orbit','Signal'];
+
+function initIconPicker() {
+  var grid = document.getElementById('iconGrid');
+  ICON_TYPES.forEach(function(type, i) {
+    var opt = div('icon-opt '+(i===0?'selected':''));
+    opt.dataset.id = String(i);
+    opt.appendChild(makeSVGIcon(type));
+    var lbl = document.createElement('span');
+    lbl.textContent = ICON_NAMES[i];
+    opt.appendChild(lbl);
+    opt.addEventListener('click', function() {
+      grid.querySelectorAll('.icon-opt').forEach(function(o){ o.classList.remove('selected'); });
+      opt.classList.add('selected');
+      S.selectedIcon = opt.dataset.id;
+      // Update brand mark
+      var bm = document.getElementById('brandMark');
+      bm.innerHTML = '';
+      bm.style.cssText = 'flex-shrink:0;width:34px;height:34px;border-radius:10px;overflow:hidden';
+      var ic = makeSVGIcon(type);
+      ic.style.cssText = 'width:34px;height:34px;border-radius:10px';
+      bm.appendChild(ic);
+    });
+    grid.appendChild(opt);
+  });
+
+  document.getElementById('btnIconPicker').addEventListener('click', function() {
+    document.getElementById('iconModal').classList.remove('hidden');
+  });
+  document.getElementById('iconDone').addEventListener('click', function() {
+    document.getElementById('iconModal').classList.add('hidden');
+    showToast('Icon updated','App icon saved.');
+  });
+  document.getElementById('iconModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.add('hidden');
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// WIRE UP NAVIGATION
+// ════════════════════════════════════════════════════════════════
+document.getElementById('btnBack').addEventListener('click', goBack);
+document.querySelectorAll('#tabbar .tab-btn').forEach(function(b) {
+  b.addEventListener('click', function() { switchTab(b.dataset.tab); });
+});
+document.querySelectorAll('#plat-bar .plat-btn').forEach(function(b) {
+  b.addEventListener('click', function() { switchPlatform(b.dataset.plat); });
+});
+
+// ════════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════════
+initIconPicker();
+
+// Apply layout on DOMContentLoaded, then again when fonts settle
+document.addEventListener('DOMContentLoaded', initLayout);
+window.addEventListener('load', initLayout);
+window.addEventListener('resize', initLayout);
+window.addEventListener('orientationchange', function() { setTimeout(initLayout, 300); });
+
+// Initial render
+render();
+
+// Ensure layout is correct after initial render
+setTimeout(initLayout, 50);
+setTimeout(initLayout, 250);
+</script>
+</body>
+</html>
